@@ -1,5 +1,3 @@
-local utils = require("auto-dark-mode.utils")
-
 local timer_id
 ---@type boolean
 local is_currently_dark_mode
@@ -13,24 +11,16 @@ local update_interval
 
 ---@param callback fun(is_dark_mode: boolean)
 local function check_is_dark_mode(callback)
-	utils.check_is_root(function(is_root)
-		local defaults_command = "defaults read -g AppleInterfaceStyle"
-
-		if is_root then
-			defaults_command = 'su - $SUDO_USER -c "' .. defaults_command .. '"'
-		end
-
-		utils.start_job(defaults_command, {
-			on_exit = function(exit_code)
-				local is_dark_mode = exit_code == 0
-				callback(is_dark_mode)
-			end,
-		})
-	end)
+		local handle = io.popen("reg query HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize /v SystemUsesLightTheme")
+		local result = handle:read("*a")
+		handle:close()
+		local is_dark_mode = tonumber(string.sub(result, -3)) == 0
+    callback(is_dark_mode)
 end
 
 ---@param is_dark_mode boolean
 local function change_theme_if_needed(is_dark_mode)
+	-- local is_currently_dark_mode = (vim.api.nvim_get_option('background') == 'dark')
 	if is_dark_mode == is_currently_dark_mode then
 		return
 	end
@@ -50,17 +40,12 @@ local function start_check_timer()
 end
 
 local function init()
-	local current_os = utils.get_os()
-	if current_os ~= "darwin" then
-		return
-	end
-
 	if not set_dark_mode or not set_light_mode then
 		error([[
 
         Call `setup` first:
 
-        require('auto-dark-mode').setup({
+        require('auto-dark-windows').setup({
             set_dark_mode=function()
                 vim.api.nvim_set_option('background', 'dark')
                 vim.cmd('colorscheme gruvbox')
@@ -72,6 +57,7 @@ local function init()
         ]])
 	end
 
+	-- a callback
 	check_is_dark_mode(change_theme_if_needed)
 	start_check_timer()
 end
@@ -99,4 +85,4 @@ local function setup(options)
 	update_interval = options.update_interval or 3000
 end
 
-return { setup = setup, init = init, disable = disable }
+return { setup = setup, init = init, disable = disable}
