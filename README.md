@@ -1,3 +1,13 @@
+# auto-dark-windows.nvim
+
+Auto-dark-mode.nvim for Windows
+
+This is a plugin that enables automatic dark mode switching on Windows using Neovim. 
+
+Only been tested on `Windows10 22H2` and intended for personal use. 
+
+Not recommend installing it as a plugin.
+
 # auto-dark-mode.nvim
 A Neovim plugin for macOS that automatically changes the editor appearance
 based on system settings.
